@@ -55,11 +55,34 @@ const getLeads = async (req, res) => {
       .json({ status: false, message: "Method Not Allowed" });
   }
   try {
-    const lead = await Lead.findAll();
 
-    return res
-      .status(200)
-      .json({ status: true, message: "data fetched successfully", data: lead });
+    const { search } = req.query;
+    if (!search) {
+      const lead = await Lead.findAll();
+      return res.status(200).json({
+        status: true,
+        message: "data fetched successfully",
+        data: lead,
+      });
+    } else {
+      const searchLower = search.toLowerCase();
+      const filteredLead = lead.filter((item) => {
+        return (
+          item.full_name.toLowerCase().includes(searchLower) ||
+          item.email.toLowerCase().includes(searchLower) ||
+          item.phone.toLowerCase().includes(searchLower) ||
+          item.source.toLowerCase().includes(searchLower) ||
+          item.status.toString().toLowerCase().includes(searchLower) ||
+          item.assigned_to.toLowerCase().includes(searchLower)
+        );
+      });
+      return res.status(200).json({
+        status: true,
+        message: "data fetched successfully",
+        data: filteredLead,
+      });
+    }
+
   } catch (error) {
     console.error("Error fetching user data:", error);
     return res.status(500).json({
